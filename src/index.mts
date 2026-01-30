@@ -1,5 +1,6 @@
 import express from "express";
 import { myGameList } from "./data/gameList.mjs";
+import { Game } from "./modules/Game.mjs";
 
 //app är mitt api
 const app = express();
@@ -10,11 +11,30 @@ app.get("/game", (req, res) => {
   let filteredList = myGameList;
 
   if (search) {
-    filteredList = myGameList.filter((game) => {
-      game.title.toLowerCase().includes(search.toString());
-    });
+    console.log("req.query:", req.query);
+
+    filteredList = myGameList.filter((game) =>
+      game.title.toLowerCase().includes(search.toString()),
+    );
   }
-  res.status(200).json("Ingrids first API says HELLO" + filteredList);
+  if (filteredList.length === 0) {
+    res.status(400).json({ message: "Search not found." });
+  }
+  res.status(200).json(filteredList);
+});
+
+app.get("/game/:id", (req, res) => {
+  const { id } = req.params;
+
+  const found = myGameList.find((game) => game.id === +id);
+
+  if (found) {
+    res.status(200).json(found);
+  } else {
+    res
+      .status(400)
+      .json({ message: "Game with id: " + id + " was not found." });
+  }
 });
 
 app.listen(3000, () => {
